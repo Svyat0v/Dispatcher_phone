@@ -9,8 +9,10 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QHBoxLayout,
-    QMessageBox,
+    QStackedWidget,
 )
+
+from PySide6.QtCore import Qt
 
 
 class DispatcherWindow(QMainWindow):
@@ -18,77 +20,109 @@ class DispatcherWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Настройки главного окна
         self.setWindowTitle("Dispatcher System")
         self.setMinimumSize(1000, 650)
 
-        # Создаём центральный виджет
+        # Главный контейнер
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        # Основной макет
         main_layout = QHBoxLayout(central_widget)
 
         # Левая панель
         sidebar = QVBoxLayout()
 
         title = QLabel("ДИСПЕТЧЕРСКАЯ")
-        title.setStyleSheet("font-size: 20px; font-weight: bold;")
+        title.setStyleSheet(
+            "font-size: 20px; font-weight: bold;"
+        )
 
-        clients_button = QPushButton("Клиенты")
-        calls_button = QPushButton("Звонки")
-        orders_button = QPushButton("Заявки")
-        brigades_button = QPushButton("Бригады")
+        self.home_button = QPushButton("Главная")
+        self.clients_button = QPushButton("Клиенты")
+        self.calls_button = QPushButton("Звонки")
+        self.orders_button = QPushButton("Заявки")
+        self.crew_button = QPushButton("Бригада")
 
         sidebar.addWidget(title)
         sidebar.addSpacing(20)
-        sidebar.addWidget(clients_button)
-        sidebar.addWidget(calls_button)
-        sidebar.addWidget(orders_button)
-        sidebar.addWidget(brigades_button)
+        sidebar.addWidget(self.home_button)
+        sidebar.addWidget(self.clients_button)
+        sidebar.addWidget(self.calls_button)
+        sidebar.addWidget(self.orders_button)
+        sidebar.addWidget(self.crew_button)
         sidebar.addStretch()
 
-        # Центральная область
-        content = QVBoxLayout()
+        # Контейнер страниц
+        self.pages = QStackedWidget()
 
-        welcome = QLabel("Рабочее место диспетчера")
-        welcome.setStyleSheet(
-            "font-size: 26px; font-weight: bold;"
+        self.pages.addWidget(
+            self.create_page("Главная", "Рабочее место диспетчера")
         )
 
-        description = QLabel(
-            "Система управления звонками и заявками"
+        self.pages.addWidget(
+            self.create_page("Клиенты", "Справочник клиентов")
         )
 
-        incoming_call_button = QPushButton(
-            "Имитировать входящий звонок"
+        self.pages.addWidget(
+            self.create_page("Звонки", "История телефонных звонков")
         )
 
-        incoming_call_button.clicked.connect(
-            self.simulate_incoming_call
+        self.pages.addWidget(
+            self.create_page("Заявки", "Управление заявками")
         )
 
-        content.addWidget(welcome)
-        content.addWidget(description)
-        content.addSpacing(30)
-        content.addWidget(incoming_call_button)
-        content.addStretch()
+        self.pages.addWidget(
+            self.create_page("Бригада", "Список занятости")
+        )
+
+
+        # Подключаем кнопки к функциям
+        self.home_button.clicked.connect(self.open_home)
+        self.clients_button.clicked.connect(self.open_clients)
+        self.calls_button.clicked.connect(self.open_calls)
+        self.orders_button.clicked.connect(self.open_orders)
+        self.crew_button.clicked.connect(self.open_crew)
 
         # Собираем интерфейс
         main_layout.addLayout(sidebar, 1)
-        main_layout.addLayout(content, 4)
+        main_layout.addWidget(self.pages, 4)
 
-    def simulate_incoming_call(self):
-        QMessageBox.information(
-            self,
-            "Входящий звонок",
-            "Номер: +7 900 123-45-67\n"
-            "Клиент: пока не найден\n\n"
-            "Это тестовый звонок."
+    def create_page(self, title, description):
+
+        page = QWidget()
+        layout = QVBoxLayout(page)
+
+        heading = QLabel(title)
+        heading.setStyleSheet(
+            "font-size: 26px; font-weight: bold;"
         )
 
+        info = QLabel(description)
 
-# Запуск приложения
+        layout.addWidget(heading)
+        layout.addWidget(info)
+        layout.addStretch()
+
+        return page
+
+    # Функции переключения страниц
+
+    def open_home(self):
+        self.pages.setCurrentIndex(0)
+
+    def open_clients(self):
+        self.pages.setCurrentIndex(1)
+
+    def open_calls(self):
+        self.pages.setCurrentIndex(2)
+
+    def open_orders(self):
+        self.pages.setCurrentIndex(3)
+
+    def open_crew(self):
+        self.pages.setCurrentIndex(4)
+
+
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
@@ -97,5 +131,3 @@ if __name__ == "__main__":
     window.show()
 
     sys.exit(app.exec())
-
-
