@@ -29,3 +29,5 @@ SessionLocal = sessionmaker(
 
 # Базовый класс для моделей
 Base = declarative_base()
+
+print(f"Путь к базе данных: {DATABASE_PATH}")
