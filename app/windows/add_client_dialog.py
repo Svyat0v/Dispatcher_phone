@@ -5,14 +5,16 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QPushButton
 )
-
-from app.services.client_service import add_client
+from app.services.client_service import add_client, update_client
+from PySide6.QtWidgets import QMessageBox
 
 
 class AddClientDialog(QDialog):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None, client=None):
+        super().__init__(parent)
+
+        self.client = client
 
         self.setWindowTitle("Добавление клиента")
         self.resize(400, 300)
@@ -23,6 +25,12 @@ class AddClientDialog(QDialog):
         self.phone_input = QLineEdit()
         self.address_input = QLineEdit()
         self.email_input = QLineEdit()
+
+        if self.client:
+            self.name_input.setText(self.client.full_name)
+            self.phone_input.setText(self.client.phone)
+            self.address_input.setText(self.client.address)
+            self.email_input.setText(self.client.email)
 
         layout.addWidget(QLabel("ФИО:"))
         layout.addWidget(self.name_input)
@@ -46,11 +54,31 @@ class AddClientDialog(QDialog):
         address = self.address_input.text().strip()
         email = self.email_input.text().strip()
 
-        print(name, phone, address, email)
+        if not name or not phone:
+            print("Заполните ФИО и Телефон!")
+            return
 
-        add_client(
-            full_name=name,
-            phone=phone,
-            address=address,
-            email=email,
-        )
+        if self.client:
+            success = update_client(
+                client_id=self.client.id,
+                full_name=name,
+                phone=phone,
+                address=address,
+                email=email
+            )
+        else:
+            success = add_client(
+                full_name=name,
+                phone=phone,
+                address=address,
+                email=email
+            )
+
+        if success:
+            self.accept()
+        else:
+            QMessageBox.warning(
+                self,
+                "Ошибка сохранения",
+                "Не удалось добавить клиента. Возможно, номер телефона уже существует."
+            )

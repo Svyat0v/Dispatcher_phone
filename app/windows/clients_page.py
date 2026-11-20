@@ -1,13 +1,22 @@
 from PySide6.QtWidgets import (
+    QDialog,
     QWidget,
     QVBoxLayout,
     QLabel,
     QTableWidget,
     QTableWidgetItem,
-    QHeaderView
+    QHeaderView,
+    QMessageBox
 )
-from app.services.client_service import get_all_clients
-from PySide6.QtWidgets import QPushButton
+
+from app.models import client
+from app.services.client_service import (
+    get_all_clients,
+    get_client_by_id,
+    delete_client,
+    )
+
+from PySide6.QtWidgets import QPushButton, QAbstractItemView, QDialog
 from app.windows.add_client_dialog import AddClientDialog
 
 
@@ -40,15 +49,23 @@ class ClientsPage(QWidget):
             QHeaderView.ResizeMode.Stretch
         )
 
-        # self.table.setRowCount(1)
-        #
-        # client_id = QTableWidgetItem("1")
-        # item = QTableWidgetItem("Иван Иванов")
-        # phone = QTableWidgetItem("+7900123456")
-        #
-        # self.table.setItem(0, 0, client_id)
-        # self.table.setItem(0,1, item)
-        # self.table.setItem(0, 2, phone)
+        self.table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+            )
+
+        self.table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+            )
+
+        # Кнопка редактирования клиента
+        self.edit_button = QPushButton("Редактирование клиента")
+        layout.addWidget(self.edit_button)
+        self.edit_button.clicked.connect(self.edit_client)
+
+        # Кнопка удаления клиента
+        self.delete_button = QPushButton("Удалить клиента")
+        layout.addWidget(self.delete_button)
+        self.delete_button.clicked.connect(self.delete_selected_client)
 
         layout.addWidget(title)
         layout.addWidget(self.table)
@@ -81,5 +98,64 @@ class ClientsPage(QWidget):
             )
 
     def open_add_dialog(self):
-        dialog = AddClientDialog()
-        dialog.exec()
+        dialog = AddClientDialog(self)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.load_clients()
+
+    def edit_client(self):
+
+        row = self.table.currentRow()
+
+        if row == -1:
+            print("Выберите клиента!")
+            return
+
+        client_id = int(self.table.item(row, 0).text())
+
+        client = get_client_by_id(client_id)
+
+        if client:
+            dialog = AddClientDialog(self, client=client)
+
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self.load_clients()
+
+    def delete_selected_client(self):
+
+        row = self.table.currentRow()
+
+        if row == -1:
+            QMessageBox.warning(
+                self,
+                "Ошибка",
+                "Выберите клиента для удаления!"
+            )
+            return
+
+        client_id = int(self.table.item(row, 0).text())
+
+        answer = QMessageBox.question(
+            self,
+            "Подтверждение удаления",
+            "Вы уверены, что хотите удалить клиента?",
+            QMessageBox.StandardButton.Yes |
+            QMessageBox.StandardButton.No
+        )
+
+        if answer == QMessageBox.StandardButton.Yes:
+            success = delete_client(client_id)
+
+            if success:
+                self.load_clients()
+                QMessageBox.information(
+                    self,
+                    "Успешно",
+                    "Клиент удалён!"
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Ошибка",
+                    "Не удалось удалить клиента!"
+                )
