@@ -2,6 +2,8 @@ from app.database.connection import Base, engine
 
 # Импортируем модели
 from app.models.client import Client
+from app.models.call import Call
+
 
 
 def create_database():
