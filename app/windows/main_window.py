@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QStackedWidget
 )
 from app.windows.clients_page import ClientsPage
+from app.windows.calls_page import CallsPage
 
 
 class MainWindow(QMainWindow):
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         sidebar.addStretch()
 
         self.pages.addWidget(ClientsPage())
-        self.pages.addWidget(QLabel("Страница звонков"))
+        self.pages.addWidget(CallsPage())
         self.pages.addWidget(QLabel("Страница заявок"))
         self.pages.addWidget(QLabel("Страница бригад"))
         self.pages.addWidget(QLabel("Отчеты"))

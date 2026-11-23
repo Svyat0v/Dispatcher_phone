@@ -6,7 +6,8 @@ from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
-    QMessageBox
+    QMessageBox,
+    QLineEdit
 )
 
 from app.models import client
@@ -67,6 +68,13 @@ class ClientsPage(QWidget):
         layout.addWidget(self.delete_button)
         self.delete_button.clicked.connect(self.delete_selected_client)
 
+        # Поиск клиентов 
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Поиск по ФИО или телефону...")
+        self.search_input.textChanged.connect(self.search_clients)
+
+
+        layout.addWidget(self.search_input)
         layout.addWidget(title)
         layout.addWidget(self.table)
         self.load_clients()
@@ -159,3 +167,17 @@ class ClientsPage(QWidget):
                     "Ошибка",
                     "Не удалось удалить клиента!"
                 )
+
+    def search_clients(self, text):
+
+         text = text.lower().strip()
+
+         for row in range(self.table.rowCount()):
+
+            name = self.table.item(row, 1).text().lower()
+            phone = self.table.item(row, 2).text().lower()
+
+            found = text in name or text in phone
+
+            self.table.setRowHidden(row, not found)
+    
