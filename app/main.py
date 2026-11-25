@@ -2,10 +2,12 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
+from app.database.init_db import create_database
 from app.windows.main_window import MainWindow
 
 
 def main():
+    create_database()
 
     app = QApplication(sys.argv)
 

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 from app.windows.clients_page import ClientsPage
 from app.windows.calls_page import CallsPage
 from app.windows.orders_page import OrdersPage
+from app.windows.crews_page import CrewsPage
 
 
 class MainWindow(QMainWindow):
@@ -49,7 +50,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(ClientsPage())
         self.pages.addWidget(CallsPage())
         self.pages.addWidget(OrdersPage())
-        self.pages.addWidget(QLabel("Страница бригад"))
+        self.pages.addWidget(CrewsPage())
         self.pages.addWidget(QLabel("Отчеты"))
 
         self.clients_button.clicked.connect(

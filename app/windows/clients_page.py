@@ -17,6 +17,7 @@ from app.services.client_service import (
     delete_client,
     )
 
+
 from PySide6.QtWidgets import QPushButton, QAbstractItemView, QDialog
 from app.windows.add_client_dialog import AddClientDialog
 

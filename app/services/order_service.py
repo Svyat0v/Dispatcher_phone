@@ -43,3 +43,37 @@ def get_all_orders():
 
     finally:
         session.close()
+
+def update_order_status(order_id, new_status):
+    session = SessionLocal()
+
+    try:
+        order = session.query(Order).filter(
+            Order.id == order_id
+        ).first()
+
+        if order is None:
+            return False
+
+        allowed_statuses = [
+            "Новая",
+            "В работе",
+            "Выполненая",
+            "Отменёная"
+        ]
+
+        if new_status not in allowed_statuses:
+            return False
+
+        order.status = new_status
+
+        session.commit()
+        return True
+
+    except Exception as errorr:
+        session.rollback()
+        print(f"Ошибка обновления заявки: {errorr}")
+        return False
+
+    finally:
+        session.close()
