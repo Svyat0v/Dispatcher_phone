@@ -14,7 +14,13 @@ from app.services.order_service import add_order
 
 class OrderDialog(QDialog):
 
-    def __init__(self, parent=None):
+    def __init__(
+            self,
+            parent=None,
+            initial_name="",
+            initial_phone="",
+            initial_address="",
+    ):
         super().__init__(parent)
 
         self.setWindowTitle("Новая заявка")
@@ -26,6 +32,10 @@ class OrderDialog(QDialog):
         self.name_input = QLineEdit()
         self.phone_input = QLineEdit()
         self.address_input = QLineEdit()
+
+        self.name_input.setText(initial_name)
+        self.phone_input.setText(initial_phone)
+        self.address_input.setText(initial_address)
 
         self.description_input = QTextEdit()
 

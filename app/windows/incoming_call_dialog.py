@@ -1,6 +1,3 @@
-import re
-
-from PySide6.QtGui import qAlpha
 from PySide6.QtWidgets import (
     QDialog,
     QMessageBox,
@@ -9,8 +6,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton
 )
-from app.models import client
 from app.windows.client_card_dialog import ClientCardDialog
+from app.windows.order_dialog import OrderDialog
 
 
 
@@ -25,6 +22,10 @@ class IncomingCallDialog(QDialog):
         parent=None
     ):
         super().__init__(parent)
+
+        self.phone = phone
+        self.client_name = client_name
+        self.address = address
 
         self.client_id = client_id
 
@@ -50,6 +51,17 @@ class IncomingCallDialog(QDialog):
 
         self.answer_button.clicked.connect(self.answer_call)
         self.reject_button.clicked.connect(self.reject_call)
+        self.client_button.clicked.connect(self.open_client_card)
+
+        self.create_order_button = QPushButton(
+            "Создать заявку"
+        )
+
+        layout.addWidget(self.create_order_button)
+
+        self.create_order_button.clicked.connect(
+            self.create_order
+        )
 
         layout.addWidget(self.client_button)
         layout.addWidget(self.address_label)
@@ -73,11 +85,28 @@ class IncomingCallDialog(QDialog):
                 "Клиент не найден",
                 "Этот номер отсутсвует в базе клиентов."
             )
-        return 
+            return
 
         dialog = ClientCardDialog(
             client_id=self.client_id,
             parent=self
+        )
+
+        dialog.exec()
+
+    def create_order(self):
+
+        # Не записываем фиктивное имя неизвестного клиента
+        if self.client_id is not None:
+            name = self.client_name
+        else:
+            name = ""
+
+        dialog = OrderDialog(
+            parent=self,
+            initial_name=name,
+            initial_phone=self.phone,
+            initial_address=self.address or "",
         )
 
         dialog.exec()

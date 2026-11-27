@@ -53,6 +53,10 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(CrewsPage())
         self.pages.addWidget(QLabel("Отчеты"))
 
+        self.pages.currentChanged.connect(
+            self.refresh_current_page
+        )
+
         self.clients_button.clicked.connect(
             lambda: self.pages.setCurrentIndex(0)
         )
@@ -72,3 +76,20 @@ class MainWindow(QMainWindow):
         self.reports_button.clicked.connect(
             lambda: self.pages.setCurrentIndex(4)
         )
+
+    def refresh_current_page(self):
+
+        page = self.pages.currentWidget()
+
+        if isinstance(page, ClientsPage):
+            page.load_clients()
+
+        elif isinstance(page, CallsPage):
+            page.load_calls()
+
+        elif isinstance(page, OrdersPage):
+            page.load_orders()
+            page.load_crews_combo()
+
+        elif isinstance(page, CrewsPage):
+            page.load_crews()

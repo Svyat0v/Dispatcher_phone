@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 
 from app.services.crew_service import get_all_crews
 from app.windows.crew_dialog import CrewDialog
+from app.services.order_service import get_active_orders_by_crew
 
 
 class CrewsPage(QWidget):
@@ -55,16 +56,22 @@ class CrewsPage(QWidget):
 
         for row, crew in enumerate(crews):
 
+            active_orders = get_active_orders_by_crew(crew.id)
+
+            if active_orders:
+                status = "На выезде"
+            else:
+                status = "Свободна"
+
             values = [
                 str(crew.id),
                 crew.name,
                 crew.leader,
                 crew.phone or "",
-                crew.status
+                status
             ]
 
             for column, value in enumerate(values):
-
                 self.table.setItem(
                     row,
                     column,
