@@ -11,12 +11,12 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QDialog
 )
-
 from app.services.order_service import (
     get_all_orders,
-    update_order_status
+    update_order_status,
+    assign_crew
 )
-
+from app.services.crew_service import get_all_crews
 from app.windows.order_dialog import OrderDialog
 
 
@@ -45,6 +45,16 @@ class OrdersPage(QWidget):
             "Изменить статус"
         )
 
+        self.crew_combo = QComboBox()
+
+        self.assign_crew_button = QPushButton(
+            "Назначить бригаду"
+        )
+
+        crew_layout = QHBoxLayout()
+        crew_layout.addWidget(self.crew_combo)
+        crew_layout.addWidget(self.assign_crew_button)
+
         status_layout = QHBoxLayout()
         status_layout.addWidget(self.status_combo)
         status_layout.addWidget(self.change_status_button)
@@ -52,7 +62,7 @@ class OrdersPage(QWidget):
         # Создание таблицы заявок
         self.table = QTableWidget()
 
-        self.table.setColumnCount(8)
+        self.table.setColumnCount(9)
 
         self.table.setHorizontalHeaderLabels([
             "ID",
@@ -62,7 +72,8 @@ class OrdersPage(QWidget):
             "Адрес",
             "Описание",
             "Приоритет",
-            "Статус"
+            "Статус",
+            "Бригада"
         ])
 
         # Растягиваем столбцы
@@ -83,6 +94,7 @@ class OrdersPage(QWidget):
         # Расположение элементов
         layout.addWidget(self.add_button)
         layout.addLayout(status_layout)
+        layout.addLayout(crew_layout)
         layout.addWidget(self.table)
 
         # Подключение кнопок
@@ -94,8 +106,14 @@ class OrdersPage(QWidget):
             self.change_order_status
         )
 
+        self.assign_crew_button.clicked.connect(
+            self.assign_selected_crew
+        )
+
         # Загружаем заявки при открытии
         self.load_orders()
+
+        self.load_crews_combo()
 
     def change_order_status(self):
 
@@ -142,6 +160,13 @@ class OrdersPage(QWidget):
 
         orders = get_all_orders()
 
+        crews = get_all_crews()
+
+        crew_names = {
+            crew.id: crew.name
+            for crew in crews
+        }
+
         self.table.setRowCount(len(orders))
 
         for row, order in enumerate(orders):
@@ -154,7 +179,8 @@ class OrdersPage(QWidget):
                 order.address,
                 order.description,
                 order.priority,
-                order.status
+                order.status,
+                crew_names.get(order.crew_id, "Не назначена"),
             ]
 
             for column, value in enumerate(values):
@@ -164,6 +190,66 @@ class OrdersPage(QWidget):
                     column,
                     QTableWidgetItem(value)
                 )
+
+    def load_crews_combo(self):
+
+        self.crew_combo.clear()
+
+        crews = get_all_crews()
+
+        for crew in crews:
+            self.crew_combo.addItem(
+                crew.name,
+                crew.id
+            )
+
+    def assign_selected_crew(self):
+
+        row = self.table.currentRow()
+
+        if row == -1:
+            QMessageBox.warning(
+                self,
+                "Ошибка",
+                "Сначало выберите заявку"
+            )
+            return
+
+        order_id = int(
+            self.table.item(row, 0).text()
+        )
+
+        crew_id = self.crew_combo.currentData()
+
+        if crew_id is None:
+            QMessageBox.warning(
+                self,
+                "Ошибка",
+                "Нет доступных бригад для выбора!"
+            )
+            return
+
+        success = assign_crew(
+            order_id=order_id,
+            crew_id=crew_id
+        )
+
+        if success:
+            self.load_orders()
+
+            QMessageBox.information(
+                self,
+                "Успешно",
+                "Бригада назначена на заявку!"
+            )
+
+        else:
+            QMessageBox.warning(
+                self,
+                "Ошибка",
+                "Не удалось назначить бригаду!"
+            )
+
 
     def open_order_dialog(self):
 

@@ -5,10 +5,12 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
-    QHeaderView
+    QHeaderView,
+    QDialog
 )
 
 from app.services.crew_service import get_all_crews
+from app.windows.crew_dialog import CrewDialog
 
 
 class CrewsPage(QWidget):
@@ -21,6 +23,7 @@ class CrewsPage(QWidget):
         title = QLabel("Управление бригадами")
 
         self.add_button = QPushButton("Добавить бригаду")
+        self.add_button.clicked.connect(self.open_crew_dialog)
 
         self.table = QTableWidget()
 
@@ -67,3 +70,9 @@ class CrewsPage(QWidget):
                     column,
                     QTableWidgetItem(value)
                 )
+
+    def open_crew_dialog(self):
+        dialog = CrewDialog()
+
+        if dialog.exec_() == QDialog.DialogCode.Accepted:
+            self.load_crews()

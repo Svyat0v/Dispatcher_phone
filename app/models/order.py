@@ -1,6 +1,12 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+)
 from app.database.connection import Base
 
 
@@ -23,3 +29,9 @@ class Order(Base):
     status = Column(String(30), default="Новая")
 
     created_at = Column(DateTime, default=datetime.now)
+
+    crew_id = Column(
+        Integer,
+        ForeignKey("crews.id"),
+        nullable=True
+    )

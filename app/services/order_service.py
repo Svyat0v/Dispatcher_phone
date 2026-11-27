@@ -1,5 +1,6 @@
 from app.database.connection import SessionLocal
 from app.models.order import Order
+from app.models.crew import Crew
 
 
 def add_order(client_name, phone, address, description, priority):
@@ -73,6 +74,37 @@ def update_order_status(order_id, new_status):
     except Exception as errorr:
         session.rollback()
         print(f"Ошибка обновления заявки: {errorr}")
+        return False
+
+    finally:
+        session.close()
+
+
+def assign_crew(order_id, crew_id):
+
+    session = SessionLocal()
+
+    try:
+        order = session.query(Order).filter(
+            Order.id == order_id
+        ).first()
+
+        crew = session.query(Crew).filter(
+            Crew.id == crew_id
+        ).first()
+
+        if order is None or crew is None:
+            return False
+
+        order.crew_id = crew.id
+
+        session.commit()
+
+        return True
+
+    except Exception as error:
+        session.rollback()
+        print(f"Ошибка назначения бригады: {error}")
         return False
 
     finally:
